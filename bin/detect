@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# bin/detect <build-dir>
+
+# when it is included it should be run, so never "exit 1"
+echo "opencv" && exit 0
