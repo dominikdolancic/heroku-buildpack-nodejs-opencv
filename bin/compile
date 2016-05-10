@@ -10,7 +10,7 @@ CACHE_DIR=$2
 
 # fetch and cache the vulcan build
 OPENCV_PACKAGE="https://www.dropbox.com/s/z42bym6b10zgknx/heroku_node_opencv.tar.gz?dl=0"
-OPENCV_PACKAGE_ETAG=$(curl -s --head "$OPENCV_PACKAGE" | grep -Ei '^etag' | sed -r 's/^etag|[^a-zA-Z0-9]+//gi')
+OPENCV_PACKAGE_ETAG=     # $(curl -s --head "$OPENCV_PACKAGE" | grep -Ei '^etag' | sed -r 's/^etag|[^a-zA-Z0-9]+//gi')
 VENDORED_OPENCV="/app/vendor/opencv"
 OPENCV_CACHE="$CACHE_DIR/opencv_$OPENCV_PACKAGE_ETAG";
 
@@ -20,7 +20,7 @@ if [ -d "$OPENCV_CACHE" ]; then
 else
   echo "-----> Fetching and caching OpenCV ($OPENCV_PACKAGE_ETAG)"
   mkdir -p $VENDORED_OPENCV
-  curl $OPENCV_PACKAGE -s -o - | tar xzf - -C $VENDORED_OPENCV
+  curl $OPENCV_PACKAGE -s -o - | tar -xzf - -C $VENDORED_OPENCV
   mkdir -p $CACHE_DIR
   cp -a $VENDORED_OPENCV $OPENCV_CACHE
 fi
@@ -34,6 +34,6 @@ cp -a "$VENDORED_OPENCV/.heroku/vendor/lib/." $VENDORED_SO
 
 # runtime
 mkdir -p "$BUILD_DIR/.profile.d"
-echo "export LD_LIBRARY_PATH=\"\$HOME/.heroku/vendor/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
-echo "export PKG_CONFIG_PATH=\"\$HOME/.heroku/vendor/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
+echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
+echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
 echo "export PATH=\"\$HOME/usr/local/bin:$BUILD_DIR/vendor/opencv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"" > $BUILD_DIR/.profile.d/opencv.sh
