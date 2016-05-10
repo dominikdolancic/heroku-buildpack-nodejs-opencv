@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bin/compile <build-dir> <cache-dir>
+
 # SBL takes in BUILD_DIR CACHE_DIR ENV_DIR
 
 title() {
@@ -9,6 +9,16 @@ title() {
 subtitle() {
   echo "       $*"
 }
+
+# Taken from python heroku buildpack
+###################################
+shopt -s extglob
+
+if [ $(uname) == Darwin ]; then
+    sed() { command sed -l "$@"; }
+else
+    sed() { command sed -u "$@"; }
+fi
 
 # Does some serious copying.
 deep-cp() {
