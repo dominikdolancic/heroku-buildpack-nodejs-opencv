@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
-# bin/detect <build-dir>
+#!/bin/bash
 
-# As this buildpack is intended to be used with composable buildpacks. 
-# when it is included it should be run, so never "exit 1"
-echo "opencv" && exit 0
+# takes BUILD_DIR as a single argument
+echo "OpenCV"
+# SBL exit 0 indicates that the buildback should be used, signifying no need for inference
+exit 0
