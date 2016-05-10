@@ -2,4 +2,9 @@
 # bin/detect <build-dir>
 
 # when it is included it should be run, so never "exit 1"
-echo "opencv" && exit 0
+if [ -f $1/package.json ]; then
+  echo "Node.js"
+  exit 0
+fi
+
+exit 1
