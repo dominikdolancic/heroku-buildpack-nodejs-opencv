@@ -66,7 +66,7 @@ unset LD_LIBRARY_PATH PATH PKG_CONFIG_PATH
 
 export LD_LIBRARY_PATH="$BUILD_DIR/.heroku/vendor/lib/"
 export PATH="$HOME/usr/local/bin:$BUILD_DIR/.heroku/vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-export PKG_CONFIG_PATH="$HOME/usr/local/lib/pkgconfig/:$BUILD_DIR/.heroku/vendor/lib/pkgconfig/"
+export PKG_CONFIG_PATH="$BUILD_DIR/.heroku/vendor/lib/pkgconfig/"
 
 
 # Setup environment
