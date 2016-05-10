@@ -73,26 +73,16 @@ mkdir -p $CACHE_DIR
 title "Generating environment"
 if [ ! -f $CACHE_DIR/env.tar.gz ]; then
   subtitle "Fetching..."
-      curl -s -L "https://www.dropbox.com/s/wdwipcca5yikiql/heroku_node_opencv.tar.gz?dl=0" > $CACHE_DIR/env.tar.gz
-
+    curl -s -L "https://www.dropbox.com/s/wdwipcca5yikiql/heroku_node_opencv.tar.gz?dl=0" > $CACHE_DIR/env.tar.gz
 fi
 subtitle "Unpacking..."
 tar -xzf $CACHE_DIR/env.tar.gz -C $BUILD_DIR
 
 
-# If Procfile is absent, try to create one using `npm start`
-if [ ! -e $BUILD_DIR/Procfile ]; then
-  npm_start=$(cat $BUILD_DIR/package.json)
-
-  # If `scripts.start` is set in package.json, or a server.js file
-  # is present in the app root, then create a default Procfile
-  if [ "$npm_start" != "null" ] || [ -f $BUILD_DIR/app.js ]; then
-    status "No Procfile found; Adding npm start to new Procfile"
-    echo "web: npm start" > $BUILD_DIR/Procfile
-  else
-    status "Procfile not found and npm start script is undefined"
-    protip "Create a Procfile or specify a start script in package.json"
-  fi
+# installing application dependencies
+if [ -f $BUILD_DIR/requirements.txt ]; then
+  title "Found requirements.txt, installing dependencies using pip"
+  $BUILD_DIR/.heroku/vendor/bin/pip install -r requirements.txt --root=$HOME --exists-action=w --src=./.heroku/src --allow-all-external
 fi
 
 # creating env variables
@@ -101,7 +91,7 @@ title "Creating environment variables."
 mkdir -p $BUILD_DIR/.profile.d
 cat <<EOF >$BUILD_DIR/.profile.d/5251124.sh
 export LD_LIBRARY_PATH="\$HOME/.heroku/vendor/lib/:\$HOME/.heroku/vendor/lib/:\$LD_LIBRARY_PATH"
-export PATH="\$HOME/usr/local/bin:\$HOME/.heroku/vendor/bin:\$HOME/vendor/node/bin:\$HOME/bin:\$HOME/node_modules/.bin:\$PATH"
+export PATH="\$HOME/usr/local/bin:\$HOME/.heroku/vendor/bin:\$PATH"
 export PYTHONPATH="\$HOME/usr/local/lib/python2.7/site-packages/:\$HOME/.heroku/vendor/lib/:\$HOME/.heroku/vendor/lib/python2.7/site-packages/"
 EOF
 # export "\$LIBRARY_PATH=\$HOME/.heroku/vendor/lib/:\$LIBRARY_PATH"
