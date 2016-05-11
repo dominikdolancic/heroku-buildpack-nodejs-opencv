@@ -1,50 +1,103 @@
+# #!/usr/bin/env bash
+
+# # SBL takes in BUILD_DIR CACHE_DIR ENV_DIR
+
+# title() {
+#   echo "-----> $*"
+# }
+
+# subtitle() {
+#   echo "       $*"
+# }
+
+# # Taken from python heroku buildpack
+# ###################################
+# shopt -s extglob
+
+
+# # Does some serious copying.
+# deep-cp() {
+#   declare source="$1" target="$2"
+
+#   mkdir -p "$target"
+
+#   # cp doesn't like being called without source params,
+#   # so make sure they expand to something first.
+#   # subshell to avoid surprising caller with shopts.
+#   (
+#     shopt -s nullglob dotglob
+#     set -- "$source"/!(tmp|.|..)
+#     [[ $# == 0 ]] || cp -a "$@" "$target"
+#   )
+# }
+
+# # Does some serious moving.
+# deep-mv() {
+#   deep-cp "$1" "$2"
+#   deep-rm "$1"
+# }
+
+# # Does some serious deleting.
+# deep-rm() {
+#   # subshell to avoid surprising caller with shopts.
+#   (
+#     shopt -s dotglob
+#     rm -rf "$1"/!(tmp|.|..)
+#   )
+# }
+
+# # fail fast
+# set -e
+
+# # parse params
+# BUILD_DIR=$1
+# CACHE_DIR=$2
+
+# APP_DIR="/app"
+# deep-mv $BUILD_DIR $APP_DIR
+# ORIG_BUILD_DIR=$BUILD_DIR
+# BUILD_DIR=$APP_DIR
+# cd $BUILD_DIR
+
+
+# unset LD_LIBRARY_PATH PATH PKG_CONFIG_PATH
+
+# export LD_LIBRARY_PATH="$HOME/usr/local/lib/:$BUILD_DIR/.heroku/vendor/lib/"
+# export PATH="$HOME/usr/local/bin:$BUILD_DIR/.heroku/vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# export PKG_CONFIG_PATH="$HOME/usr/local/lib/pkgconfig/:$BUILD_DIR/.heroku/vendor/lib/pkgconfig/"
+
+
+# # Setup environment
+# # SBL cache dir is persisted between builds so this allows us to avoid re-fetching
+# mkdir -p $CACHE_DIR
+# title "Generating environment"
+# if [ ! -f $CACHE_DIR/env.tar.gz ]; then
+#   subtitle "Fetching..."
+#     curl -s -L "https://www.dropbox.com/s/v8xznam0pi2soyu/heroku_opencv.tar.gz?dl=0" > $CACHE_DIR/env.tar.gz
+    
+# fi
+# subtitle "Unpacking..."
+# tar -xzf $CACHE_DIR/env.tar.gz -C $BUILD_DIR
+
+# # creating env variables
+# title "Creating environment variables."
+# mkdir -p $BUILD_DIR/.profile.d
+# cat <<EOF >$BUILD_DIR/.profile.d/5251124.sh
+# export LD_LIBRARY_PATH="\$HOME/app/vendor/lib/:\$LD_LIBRARY_PATH"
+# export PATH="\$HOME/usr/local/bin:\$HOME/app/vendor/bin:\$PATH"
+# export PKG_CONFIG_PATH="\$HOME/usr/local/lib/pkgconfig/:\$PKG_CONFIG_PATH"
+# EOF
+
+# deep-mv $BUILD_DIR $ORIG_BUILD_DIR
+
+# title "Buildpack OpenCV installed."
+
+
+######################################################
+
+
 #!/usr/bin/env bash
-
-# SBL takes in BUILD_DIR CACHE_DIR ENV_DIR
-
-title() {
-  echo "-----> $*"
-}
-
-subtitle() {
-  echo "       $*"
-}
-
-# Taken from python heroku buildpack
-###################################
-shopt -s extglob
-
-
-# Does some serious copying.
-deep-cp() {
-  declare source="$1" target="$2"
-
-  mkdir -p "$target"
-
-  # cp doesn't like being called without source params,
-  # so make sure they expand to something first.
-  # subshell to avoid surprising caller with shopts.
-  (
-    shopt -s nullglob dotglob
-    set -- "$source"/!(tmp|.|..)
-    [[ $# == 0 ]] || cp -a "$@" "$target"
-  )
-}
-
-# Does some serious moving.
-deep-mv() {
-  deep-cp "$1" "$2"
-  deep-rm "$1"
-}
-
-# Does some serious deleting.
-deep-rm() {
-  # subshell to avoid surprising caller with shopts.
-  (
-    shopt -s dotglob
-    rm -rf "$1"/!(tmp|.|..)
-  )
-}
+# bin/compile <build-dir> <cache-dir>
 
 # fail fast
 set -e
@@ -53,86 +106,30 @@ set -e
 BUILD_DIR=$1
 CACHE_DIR=$2
 
-APP_DIR="/app"
-deep-mv $BUILD_DIR $APP_DIR
-ORIG_BUILD_DIR=$BUILD_DIR
-BUILD_DIR=$APP_DIR
-cd $BUILD_DIR
+# fetch and cache the vulcan build
+OPENCV_PACKAGE="https://www.dropbox.com/s/v8xznam0pi2soyu/heroku_opencv.tar.gz"
+OPENCV_PACKAGE_ETAG=$(curl -s --head "$OPENCV_PACKAGE" | grep -Ei '^etag' | sed -r 's/^etag|[^a-zA-Z0-9]+//gi')
+VENDORED_OPENCV="/app/vendor/opencv"
+OPENCV_CACHE="$CACHE_DIR/opencv_$OPENCV_PACKAGE_ETAG";
 
-
-unset LD_LIBRARY_PATH PATH PKG_CONFIG_PATH
-
-export LD_LIBRARY_PATH="$HOME/usr/local/lib/:$BUILD_DIR/.heroku/vendor/lib/"
-export PATH="$HOME/usr/local/bin:$BUILD_DIR/.heroku/vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-export PKG_CONFIG_PATH="$HOME/usr/local/lib/pkgconfig/:$BUILD_DIR/.heroku/vendor/lib/pkgconfig/"
-
-
-# Setup environment
-# SBL cache dir is persisted between builds so this allows us to avoid re-fetching
-mkdir -p $CACHE_DIR
-title "Generating environment"
-if [ ! -f $CACHE_DIR/env.tar.gz ]; then
-  subtitle "Fetching..."
-    curl -s -L "https://www.dropbox.com/s/v8xznam0pi2soyu/heroku_opencv.tar.gz?dl=0" > $CACHE_DIR/env.tar.gz
-    
+if [ -d "$OPENCV_CACHE" ]; then
+  echo "-----> Reusing cached OpenCV ($OPENCV_PACKAGE_ETAG)"
+  cp -a $OPENCV_CACHE $VENDORED_OPENCV
+else
+  echo "-----> Fetching and caching OpenCV ($OPENCV_PACKAGE_ETAG)"
+  mkdir -p $VENDORED_OPENCV
+  curl $OPENCV_PACKAGE -s -o - | tar xzf - -C $VENDORED_OPENCV
+  mkdir -p $CACHE_DIR
+  cp -a $VENDORED_OPENCV $OPENCV_CACHE
 fi
-subtitle "Unpacking..."
-tar -xzf $CACHE_DIR/env.tar.gz -C $BUILD_DIR
 
-# creating env variables
-title "Creating environment variables."
-mkdir -p $BUILD_DIR/.profile.d
-cat <<EOF >$BUILD_DIR/.profile.d/5251124.sh
-export LD_LIBRARY_PATH="\$HOME/app/vendor/lib/:\$LD_LIBRARY_PATH"
-export PATH="\$HOME/usr/local/bin:\$HOME/app/vendor/bin:\$PATH"
-export PKG_CONFIG_PATH="\$HOME/usr/local/lib/pkgconfig/:\$PKG_CONFIG_PATH"
-EOF
-
-deep-mv $BUILD_DIR $ORIG_BUILD_DIR
-
-title "Buildpack OpenCV installed."
-
-
-
-# # fetch and cache the vulcan build
-# OPENCV_PACKAGE="https://www.dropbox.com/s/z42bym6b10zgknx/heroku_node_opencv.tar.gz?dl=0"
-# OPENCV_PACKAGE_ETAG=$(wget -O "$OPENCV_PACKAGE" | grep -Ei '^etag' | sed -r 's/^etag|[^a-zA-Z0-9]+//gi')
-# VENDORED_OPENCV="/app/vendor/opencv"
-# OPENCV_CACHE="$CACHE_DIR/opencv_$OPENCV_PACKAGE_ETAG";
-
-# # Setup environment
-# # SBL cache dir is persisted between builds so this allows us to avoid re-fetching
-# mkdir -p $CACHE_DIR
-# title "Generating environment"
-# if [ ! -f $CACHE_DIR/env.tar.gz ]; then
-#   subtitle "Fetching..."
-#     curl -s -L OPENCV_PACKAGE > $CACHE_DIR/env.tar.gz
-    
-# fi
-# subtitle "Unpacking..."
-# tar -xzf $CACHE_DIR/env.tar.gz -C $BUILD_DIR
-
-
-# # if [ -d "$OPENCV_CACHE" ]; then
-# #   echo "-----> Reusing cached OpenCV ($OPENCV_PACKAGE_ETAG)"
-# #   cp -a $OPENCV_CACHE $VENDORED_OPENCV
-# # else
-# #   echo "-----> Fetching and caching OpenCV ($OPENCV_PACKAGE_ETAG)"
-# #   mkdir -p $VENDORED_OPENCV
-# #   wget $OPENCV_PACKAGE | tar -xzf - -C $VENDORED_OPENCV
-# #   mkdir -p $CACHE_DIR
-# #   cp -a $VENDORED_OPENCV $OPENCV_CACHE
-# # fi
-
-# # vendor
-# echo "-----> Vendoring OpenCV shared objects into slug"
-# VENDORED_SO="$BUILD_DIR/vendor/opencv/lib"
-# mkdir -p $VENDORED_SO
-# cp -a "$VENDORED_OPENCV/.heroku/vendor/lib/." $VENDORED_SO
-
+# vendor
+echo "-----> Vendoring OpenCV shared objects into slug"
+VENDORED_SO="$BUILD_DIR/vendor/opencv/lib"
+mkdir -p $VENDORED_SO
+cp -a "$VENDORED_OPENCV/lib/." $VENDORED_SO
 
 # runtime
-# mkdir -p "$BUILD_DIR/.profile.d"
-# echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
-# echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
-# echo "export PATH=\"\$HOME/usr/local/bin:$BUILD_DIR/vendor/opencv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"" > $BUILD_DIR/.profile.d/opencv.sh
+mkdir -p "$BUILD_DIR/.profile.d"
+echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
+echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
