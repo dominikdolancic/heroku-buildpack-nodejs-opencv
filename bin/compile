@@ -129,6 +129,18 @@ VENDORED_SO="$BUILD_DIR/vendor/opencv/lib"
 mkdir -p $VENDORED_SO
 cp -a "$VENDORED_OPENCV/lib/." $VENDORED_SO
 
+VENDORED_SO_BIN="$BUILD_DIR/vendor/opencv/bin"
+mkdir -p $VENDORED_SO_BIN
+cp -a "$VENDORED_OPENCV/bin/." $VENDORED_SO_BIN
+
+VENDORED_SO_INCLUDE="$BUILD_DIR/vendor/opencv/include"
+mkdir -p $VENDORED_SO_INCLUDE
+cp -a "$VENDORED_OPENCV/include/." $VENDORED_SO_INCLUDE
+
+VENDORED_SO_SHARE="$BUILD_DIR/vendor/opencv/share"
+mkdir -p $VENDORED_SO_SHARE
+cp -a "$VENDORED_OPENCV/share/." $VENDORED_SO_SHARE
+
 # runtime
 mkdir -p "$BUILD_DIR/.profile.d"
 echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
