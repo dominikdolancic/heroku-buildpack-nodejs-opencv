@@ -125,9 +125,9 @@ fi
 
 # vendor
 echo "-----> Vendoring OpenCV shared objects into slug"
-VENDORED_SO_LIB="$BUILD_DIR/vendor/opencv/lib"
-mkdir -p $VENDORED_SO_LIB
-cp -a "$VENDORED_OPENCV/.heroku/vendor/lib/." $VENDORED_SO_LIB
+VENDORED_SO="$BUILD_DIR/vendor/opencv/lib"
+mkdir -p $VENDORED_SO
+cp -a "$VENDORED_OPENCV/lib/." $VENDORED_SO
 
 
 # runtime
