@@ -128,15 +128,7 @@ echo "-----> Vendoring OpenCV shared objects into slug"
 VENDORED_SO_LIB="$BUILD_DIR/vendor/opencv/lib"
 mkdir -p $VENDORED_SO_LIB
 cp -a "$VENDORED_OPENCV/.heroku/vendor/lib/." $VENDORED_SO_LIB
-VENDORED_SO_BIN="$BUILD_DIR/vendor/opencv/bin"
-mkdir -p $VENDORED_SO_BIN
-cp -a "$VENDORED_OPENCV/.heroku/vendor/bin/." $VENDORED_SO_BIN
-VENDORED_SO_INCLUDE="$BUILD_DIR/vendor/opencv/include"
-mkdir -p $VENDORED_SO_INCLUDE
-cp -a "$VENDORED_OPENCV/.heroku/vendor/include/." $VENDORED_SO_INCLUDE
-VENDORED_SO_SHARE="$BUILD_DIR/vendor/opencv/share"
-mkdir -p $VENDORED_SO_SHARE
-cp -a "$VENDORED_OPENCV/.heroku/vendor/share/." $VENDORED_SO_SHARE
+
 
 # runtime
 mkdir -p "$BUILD_DIR/.profile.d"
