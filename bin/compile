@@ -118,7 +118,8 @@ if [ -d "$OPENCV_CACHE" ]; then
 else
   echo "-----> Fetching and caching OpenCV ($OPENCV_PACKAGE_ETAG)"
   mkdir -p $VENDORED_OPENCV
-  curl $OPENCV_PACKAGE -s -o - | tar xzf - -C $VENDORED_OPENCV
+  curl -s -L $OPENCV_PACKAGE > $CACHE_DIR/env.tar.gz | tar -xzf $CACHE_DIR/env.tar.gz -C $VENDORED_OPENCV
+ 
   mkdir -p $CACHE_DIR
   cp -a $VENDORED_OPENCV $OPENCV_CACHE
 fi
