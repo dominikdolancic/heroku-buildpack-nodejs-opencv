@@ -12,7 +12,7 @@ CACHE_DIR=$2
 OPENCV_PACKAGE="http://cobe.servehttp.com/heroku_opencv.tgz"
 #OPENCV_PACKAGE="http://s3.amazonaws.com/tznode/vulcan-compiled-opencv.tgz"
 OPENCV_PACKAGE_ETAG=$(curl -s --head "$OPENCV_PACKAGE" | grep -Ei '^etag' | sed -r 's/^etag|[^a-zA-Z0-9]+//gi')
-VENDORED_OPENCV="/app/vendor/opencv"
+VENDORED_OPENCV="/usr/local"
 OPENCV_CACHE="$CACHE_DIR/opencv_$OPENCV_PACKAGE_ETAG";
 
 if [ -d "$OPENCV_CACHE" ]; then
@@ -28,23 +28,23 @@ fi
 
 # vendor
 echo "-----> Vendoring OpenCV shared objects into slug"
-VENDORED_SO_LIB="$BUILD_DIR/vendor/opencv/lib"
+VENDORED_SO_LIB="$BUILD_DIR/lib"
 mkdir -p $VENDORED_SO_LIB
 cp -a "$VENDORED_OPENCV/.heroku/vendor/lib/." $VENDORED_SO_LIB
 
-VENDORED_SO_BIN="$BUILD_DIR/vendor/opencv/bin"
+VENDORED_SO_BIN="$BUILD_DIR/bin"
 mkdir -p $VENDORED_SO_BIN
 cp -a "$VENDORED_OPENCV/.heroku/vendor/bin/." $VENDORED_SO_BIN
 
-VENDORED_SO_INCLUDE="$BUILD_DIR/vendor/opencv/include"
+VENDORED_SO_INCLUDE="$BUILD_DIR/include"
 mkdir -p $VENDORED_SO_INCLUDE
 cp -a "$VENDORED_OPENCV/.heroku/vendor/include/." $VENDORED_SO_INCLUDE
 
-VENDORED_SO_SHARE="$BUILD_DIR/vendor/opencv/share"
+VENDORED_SO_SHARE="$BUILD_DIR/share"
 mkdir -p $VENDORED_SO_SHARE
 cp -a "$VENDORED_OPENCV/.heroku/vendor/share/." $VENDORED_SO_SHARE
 
 # runtime
 mkdir -p "$BUILD_DIR/.profile.d"
-echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
-echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
+echo "export LD_LIBRARY_PATH=\"/usr/local/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
+echo "export PKG_CONFIG_PATH=\"/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
