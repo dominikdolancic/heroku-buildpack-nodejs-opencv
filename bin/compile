@@ -142,6 +142,15 @@ mkdir -p $VENDORED_SO_SHARE
 cp -a "$VENDORED_OPENCV/.heroku/vendor/share/." $VENDORED_SO_SHARE
 
 # runtime
-mkdir -p "$BUILD_DIR/.profile.d"
-echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
-echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
+# mkdir -p "$BUILD_DIR/.profile.d"
+# echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
+# echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
+
+# creating env variables
+title "Creating environment variables."
+mkdir -p $BUILD_DIR/.profile.d
+cat <<EOF >$BUILD_DIR/.profile.d/5251124.sh
+export LD_LIBRARY_PATH="\$HOME/vendor/opencv/lib/:\$LD_LIBRARY_PATH"
+export PATH="\$HOME/vendor/opencv/bin:\$HOME/vendor/opencv/bin:\$PATH"
+export PKG_CONFIG_PATH="\$HOME/vendor/opencv/lib/pkgconfig/:\$PKG_CONFIG_PATH"
+EOF
