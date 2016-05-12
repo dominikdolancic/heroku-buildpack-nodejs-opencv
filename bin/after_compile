@@ -1,3 +1,2 @@
 export PKG_CONFIG_PATH="/app/vendor/opencv/lib/pkgconfig:$PKG_CONFIG_PATH"
-export PATH="/app/vendor/opencv/bin:$PATH"
 export LD_LIBRARY_PATH="/app/vendor/opencv/lib:$LD_LIBRARY_PATH"
