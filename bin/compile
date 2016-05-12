@@ -107,8 +107,8 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 
 # fetch and cache the vulcan build
-# OPENCV_PACKAGE="http://cobe.servehttp.com/heroku_opencv.tgz"
-OPENCV_PACKAGE="http://s3.amazonaws.com/tznode/vulcan-compiled-opencv.tgz"
+OPENCV_PACKAGE="http://cobe.servehttp.com/heroku_opencv.tgz"
+#OPENCV_PACKAGE="http://s3.amazonaws.com/tznode/vulcan-compiled-opencv.tgz"
 OPENCV_PACKAGE_ETAG=$(curl -s --head "$OPENCV_PACKAGE" | grep -Ei '^etag' | sed -r 's/^etag|[^a-zA-Z0-9]+//gi')
 VENDORED_OPENCV="/app/vendor/opencv"
 OPENCV_CACHE="$CACHE_DIR/opencv_$OPENCV_PACKAGE_ETAG";
@@ -128,27 +128,21 @@ fi
 echo "-----> Vendoring OpenCV shared objects into slug"
 VENDORED_SO_LIB="$BUILD_DIR/vendor/opencv/lib"
 mkdir -p $VENDORED_SO_LIB
-cp -a "$VENDORED_OPENCV/lib/." $VENDORED_SO_LIB
+cp -a "$VENDORED_OPENCV/.heroku/vendor/lib/." $VENDORED_SO_LIB
 
 VENDORED_SO_BIN="$BUILD_DIR/vendor/opencv/bin"
 mkdir -p $VENDORED_SO_BIN
-cp -a "$VENDORED_OPENCV/bin/." $VENDORED_SO_BIN
+cp -a "$VENDORED_OPENCV/.heroku/vendor/bin/." $VENDORED_SO_BIN
 
 VENDORED_SO_INCLUDE="$BUILD_DIR/vendor/opencv/include"
 mkdir -p $VENDORED_SO_INCLUDE
-cp -a "$VENDORED_OPENCV/include/." $VENDORED_SO_INCLUDE
+cp -a "$VENDORED_OPENCV/.heroku/vendor/include/." $VENDORED_SO_INCLUDE
 
 VENDORED_SO_SHARE="$BUILD_DIR/vendor/opencv/share"
 mkdir -p $VENDORED_SO_SHARE
-cp -a "$VENDORED_OPENCV/share/." $VENDORED_SO_SHARE
+cp -a "$VENDORED_OPENCV/.heroku/vendor/share/." $VENDORED_SO_SHARE
 
 # runtime
-# mkdir -p "$BUILD_DIR/.profile.d"
-# echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
-# echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
-mkdir -p $BUILD_DIR/.profile.d
-cat <<EOF >$BUILD_DIR/.profile.d/5251124.sh
-export LD_LIBRARY_PATH="\$HOME/vendor/lib/:\$LD_LIBRARY_PATH"
-export PATH="\$HOME/vendor/opencv/bin:\$HOME/vendor/opencv/bin:\$PATH"
-export PKG_CONFIG_PATH="\$HOME/vendor/opencv/lib/pkgconfig/:\$PKG_CONFIG_PATH"
-EOF
+mkdir -p "$BUILD_DIR/.profile.d"
+echo "export LD_LIBRARY_PATH=\"\$HOME/vendor/opencv/lib:\$LD_LIBRARY_PATH\"" > $BUILD_DIR/.profile.d/opencv.sh
+echo "export PKG_CONFIG_PATH=\"\$HOME/vendor/opencv/lib/pkgconfig:\$PKG_CONFIG_PATH\"" >> $BUILD_DIR/.profile.d/opencv.sh
